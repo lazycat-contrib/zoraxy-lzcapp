@@ -1,0 +1,18 @@
+package: community.lazycat.app.zoraxy
+name: zoraxy
+version: 3.3.4
+description: "A lightweight reverse proxy and cluster management tool with a web UI."
+min_os_version: "1.5.0"
+homepage: https://github.com/tobychui/zoraxy
+author: tobychui
+license: AGPL-3.0
+permissions:
+  required:
+    - net.internet
+locales:
+  zh:
+    name: Zoraxy
+    description: "轻量级反向代理与集群管理工具：HTTP/HTTPS 反代、ACME 自动证书、统计与 HTTP3 一应俱全。"
+  en:
+    name: Zoraxy
+    description: "A lightweight reverse proxy and cluster management tool with a web UI."

@@ -1,0 +1,54 @@
+application:
+  subdomain: zoraxy
+  multi_instance: false
+  # Zoraxy ships its own management panel with a full account system.
+  # The registration endpoint is only open while the user table is empty,
+  # so the first visitor creates the root admin (self-service account
+  # bootstrap, papra/mattermost precedent) -> public_path is appropriate.
+  public_path:
+    - /
+  upstreams:
+    - location: /package-licenses/
+      backend: file:///lzcapp/pkg/content/licenses/
+    - location: /
+      backend: http://zoraxy:8000/
+  ingress:
+    # Reverse-proxy / ACME / HTTP3 ports served by zoraxy itself,
+    # not going through the platform entry (syncthing precedent).
+    - protocol: tcp
+      port: 80
+      service: zoraxy
+    - protocol: tcp
+      port: 443
+      service: zoraxy
+    - protocol: udp
+      port: 443
+      service: zoraxy
+
+services:
+  zoraxy:
+    # upstream: zoraxydocker/zoraxy:v3.3.4
+    image: docker.1ms.run/zoraxydocker/zoraxy:v3.3.4
+    environment:
+      - TZ=Asia/Shanghai
+    binds:
+      # Config, database, certificates all live in the config dir
+      # (VOLUME declared upstream at /opt/zoraxy/config).
+      - /lzcapp/var/mutdata:/opt/zoraxy/config
+      - /lzcapp/var/plugins:/opt/zoraxy/plugin
+usage: |
+  Zoraxy 是一个轻量级反向代理与集群管理工具，自带 Web 管理面板，
+  支持 HTTP/HTTPS 反代、ACME 自动证书、黑名单、统计与 HTTP3。
+
+  使用方法：
+  1. 打开应用，首次进入管理面板时使用注册页面创建管理员账号
+     （仅在没有任何用户时开放注册，第一个注册者即 root 管理员）。
+  2. 本包已开放 80/443 端口（TCP + UDP 443 走 HTTP3/QUIC），
+     供反代与证书签发使用，端口由服务直接监听、不经平台入口转发。
+  3. 配置、数据库与证书保存在 /lzcapp/var/mutdata，卸载应用会一并删除，
+     请定期备份。
+
+  说明：
+  - 本包未做实机验证，功能以官方文档为准：https://zoraxy.tobychui.io/
+  - 未挂载 docker.sock：容器列表功能不可用，不影响反代核心功能。
+  - 许可证 AGPL-3.0，随包分发，见 /package-licenses/。
